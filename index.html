@@ -55,10 +55,13 @@
       background-color: transparent;
       color: white;
       border: none;
-      padding: 10px 20px;
+      padding: 10px;
       border-radius: 5px;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     .menu button:hover {
@@ -102,12 +105,11 @@
       background: #EFEBE9;
       color: #5D4037;
       font-weight: 600;
-      transition: border-color 0.3s, box-shadow 0.3s;
+      transition: border-color 0.3s;
       outline-offset: 2px;
     }
     input[type="number"]:focus {
       border-color: #8D6E63;
-      box-shadow: 0 0 8px 2px #8D6E6388;
       background: #D7CCC888;
       color: #5D4037;
     }
@@ -122,16 +124,13 @@
       font-weight: 700;
       color: white;
       cursor: pointer;
-      box-shadow: 0 8px 20px #8D6E63cc;
-      transition: background-color 0.3s, box-shadow 0.3s;
+      transition: background-color 0.3s;
     }
     button:hover {
       background: #795548;
-      box-shadow: 0 10px 28px #795548cc;
     }
     button:active {
       background: #5D4037;
-      box-shadow: 0 6px 14px #5D4037cc;
       transform: translateY(1px);
     }
 
@@ -200,15 +199,86 @@
     .btn-apagar:hover {
       background-color: #dc2626;
     }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .popup button {
+      margin: 10px;
+      width: auto;
+      display: inline-block;
+    }
+
+    .summary {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .summary-label {
+      font-weight: bold;
+    }
+
+    .year-row {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .month-row {
+      background-color: #f8f8f8;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: none;
+    }
+
+    .year-separator {
+      height: 20px;
+    }
+
+    .dropdown-icon {
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
 
   <div class="app-container">
     <div class="menu">
-      <button class="menu-btn active" data-section="timer">⏱️ Timer</button>
-      <button class="menu-btn" data-section="settings">⚙️ Configurar</button>
-      <button class="menu-btn" data-section="history">🧻 Histórico</button>
+      <button class="menu-btn active" data-section="timer"><span>⏱️</span><span>Timer</span></button>
+      <button class="menu-btn" data-section="settings"><span>⚙️</span><span>Configurar</span></button>
+      <button class="menu-btn" data-section="history"><span>🧻</span><span>Histórico</span></button>
+      <button class="menu-btn" data-section="summary"><span>📊</span><span>Resumo</span></button>
     </div>
 
     <div id="settings" class="section">
@@ -245,6 +315,23 @@
           <!-- Sessions will be added here -->
         </div>
       </div>
+    </div>
+
+    <div id="summary" class="section">
+      <div>
+        <h2>📊 Resumo</h2>
+        <div id="summaryContent">
+          <!-- Summary content will be added here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="popup" class="popup">
+    <div class="popup-content">
+      <p>Ainda tá cagando?</p>
+      <button id="popup-yes">Sim</button>
+      <button id="popup-no">Não</button>
     </div>
   </div>
 
@@ -315,6 +402,7 @@
         document.getElementById('earnings').innerText = `Você ganhou R$ ${earnings.toFixed(2).replace('.', ',')} em ${timeString}.`;
         button.innerText = 'Iniciar';
         updateHistory();
+        updateSummary();
       }
     });
 
@@ -329,7 +417,27 @@
       const duration = (now - startTime) / 1000; // Duration in seconds
       const earnings = (duration / 60) * ratePerMinute;
       document.getElementById('current-earnings').innerText = `R$ ${earnings.toFixed(2).replace('.', ',')}`;
+
+      if (minutes >= 10) {
+        showPopup();
+      }
     }
+
+    function showPopup() {
+      const popup = document.getElementById('popup');
+      popup.style.display = 'flex';
+    }
+
+    document.getElementById('popup-yes').addEventListener('click', function() {
+      document.getElementById('popup').style.display = 'none';
+    });
+
+    document.getElementById('popup-no').addEventListener('click', function() {
+      document.getElementById('popup').style.display = 'none';
+      clearInterval(timerInterval);
+      const button = document.getElementById('toggle');
+      button.innerText = 'Iniciar';
+    });
 
     function updateHistory() {
       const sessionList = document.getElementById('sessionList');
@@ -360,8 +468,93 @@
           const index = this.dataset.index;
           sessions.splice(index, 1);
           updateHistory();
+          updateSummary();
         });
       });
+    }
+
+    function updateSummary() {
+      const summaryContent = document.getElementById('summaryContent');
+      summaryContent.innerHTML = '';
+
+      const summaryByYear = {};
+      sessions.forEach(session => {
+        const date = new Date(session.date.split('/').reverse().join('-'));
+        const year = date.getFullYear();
+        const month = date.toLocaleString('pt-BR', { month: 'long' });
+
+        if (!summaryByYear[year]) {
+          summaryByYear[year] = {
+            totalSessions: 0,
+            totalDuration: 0,
+            totalEarnings: 0,
+            months: {}
+          };
+        }
+
+        summaryByYear[year].totalSessions += 1;
+        summaryByYear[year].totalDuration += parseFloat(session.duration);
+        summaryByYear[year].totalEarnings += parseFloat(session.earnings.replace(',', '.'));
+
+        if (!summaryByYear[year].months[month]) {
+          summaryByYear[year].months[month] = {
+            totalSessions: 0,
+            totalDuration: 0,
+            totalEarnings: 0
+          };
+        }
+
+        summaryByYear[year].months[month].totalSessions += 1;
+        summaryByYear[year].months[month].totalDuration += parseFloat(session.duration);
+        summaryByYear[year].months[month].totalEarnings += parseFloat(session.earnings.replace(',', '.'));
+      });
+
+      for (const year in summaryByYear) {
+        const yearSummary = summaryByYear[year];
+        const yearRow = document.createElement('div');
+        yearRow.className = 'summary-row year-row';
+        yearRow.innerHTML = `
+          <div class="summary-label">🗓️ ${year}</div>
+          <div>💩 ${yearSummary.totalSessions}</div>
+          <div>⏱️ ${Math.floor(yearSummary.totalDuration / 60)}m ${Math.floor(yearSummary.totalDuration % 60)}s</div>
+          <div>💵 R$ ${yearSummary.totalEarnings.toFixed(2).replace('.', ',')}</div>
+          <div class="dropdown-icon"><i class="bi bi-caret-left-fill"></i></div>
+        `;
+        yearRow.addEventListener('click', function() {
+          const monthRows = summaryContent.querySelectorAll(`.month-row[data-year="${year}"]`);
+          const icon = yearRow.querySelector('.dropdown-icon i');
+          monthRows.forEach(row => {
+            if (row.style.display === 'none') {
+              row.style.display = 'flex';
+              icon.classList.remove('bi-caret-left-fill');
+              icon.classList.add('bi-caret-down-fill');
+            } else {
+              row.style.display = 'none';
+              icon.classList.remove('bi-caret-down-fill');
+              icon.classList.add('bi-caret-left-fill');
+            }
+          });
+        });
+        summaryContent.appendChild(yearRow);
+
+        for (const month in yearSummary.months) {
+          const monthSummary = yearSummary.months[month];
+          const monthRow = document.createElement('div');
+          monthRow.className = 'summary-row month-row';
+          monthRow.setAttribute('data-year', year);
+          monthRow.innerHTML = `
+            <div class="summary-label">🗓️ ${month.substring(0, 3).toUpperCase()}</div>
+            <div>💩 ${monthSummary.totalSessions}</div>
+            <div>⏱️ ${Math.floor(monthSummary.totalDuration / 60)}m ${Math.floor(monthSummary.totalDuration % 60)}s</div>
+            <div>💵 R$ ${monthSummary.totalEarnings.toFixed(2).replace('.', ',')}</div>
+          `;
+          summaryContent.appendChild(monthRow);
+        }
+
+        const separator = document.createElement('div');
+        separator.className = 'year-separator';
+        summaryContent.appendChild(separator);
+      }
     }
   </script>
 </body>
