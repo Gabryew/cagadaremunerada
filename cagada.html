@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Cagada Remunerada</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      color: #111827;
+      user-select: none;
+    }
+
+    .app-container {
+      background: #ffffffdd;
+      backdrop-filter: saturate(180%) blur(12px);
+      border-radius: 0;
+      padding: 20px;
+      width: 100%;
+      max-width: 400px;
+      height: 100vh;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.18);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      overflow-y: auto;
+    }
+
+    .menu {
+      display: flex;
+      justify-content: space-around;
+      margin-bottom: 20px;
+      background-color: #8B4513;
+      border-radius: 10px;
+      padding: 10px;
+      width: 100%;
+    }
+
+    .menu button {
+      background-color: transparent;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .menu button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .menu button.active {
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .section {
+      display: none;
+      width: 100%;
+      text-align: center;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    h2 {
+      font-weight: 600;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      color: #5D4037;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #5D4037;
+      margin-bottom: 6px;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 1.1rem;
+      border-radius: 14px;
+      border: 2.5px solid #D7CCC8;
+      background: #EFEBE9;
+      color: #5D4037;
+      font-weight: 600;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      outline-offset: 2px;
+    }
+    input[type="number"]:focus {
+      border-color: #8D6E63;
+      box-shadow: 0 0 8px 2px #8D6E6388;
+      background: #D7CCC888;
+      color: #5D4037;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px 0;
+      background: #8D6E63;
+      border: none;
+      border-radius: 18px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 8px 20px #8D6E63cc;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+    button:hover {
+      background: #795548;
+      box-shadow: 0 10px 28px #795548cc;
+    }
+    button:active {
+      background: #5D4037;
+      box-shadow: 0 6px 14px #5D4037cc;
+      transform: translateY(1px);
+    }
+
+    .resultado {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #5D4037;
+      width: 100%;
+      text-align: center;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+      margin-top: 20px;
+    }
+
+    #timer-display {
+      font-size: 48px;
+      margin: 20px 0;
+      color: #5D4037;
+    }
+
+    #current-earnings {
+      font-size: 24px;
+      margin: 20px 0;
+      color: #5D4037;
+    }
+
+    #earnings {
+      font-size: 20px;
+      margin: 20px 0;
+      color: #5D4037;
+    }
+
+    .entrada {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #f3f4f6;
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+
+    .entrada-info {
+      text-align: left;
+    }
+
+    .entrada-info div {
+      margin: 2px 0;
+    }
+
+    .btn-apagar {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      padding: 6px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn-apagar:hover {
+      background-color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <div class="menu">
+      <button class="menu-btn active" data-section="timer">⏱️ Timer</button>
+      <button class="menu-btn" data-section="settings">⚙️ Configurar</button>
+      <button class="menu-btn" data-section="history">🧻 Histórico</button>
+    </div>
+
+    <div id="settings" class="section">
+      <h2>⚙️ Configuração do Salário</h2>
+      <div>
+        <label for="salary">Salário Mensal (R$):</label>
+        <input type="number" id="salary" placeholder="Digite seu salário mensal" value="1412">
+      </div>
+      <div>
+        <label for="hours">Horas Trabalhadas por Dia:</label>
+        <input type="number" id="hours" placeholder="Digite as horas trabalhadas por dia" value="8">
+      </div>
+      <div>
+        <label for="days">Dias Úteis no Mês:</label>
+        <input type="number" id="days" placeholder="Digite os dias úteis no mês" value="22">
+      </div>
+      <button id="calculate">Calcular Valor por Minuto</button>
+      <div class="resultado" id="rate"></div>
+    </div>
+
+    <div id="timer" class="section active">
+      <div>
+        <div id="timer-display">00:00:0.0</div>
+        <div id="current-earnings">R$ 0,00</div>
+        <button id="toggle">Iniciar</button>
+        <div id="earnings"></div>
+      </div>
+    </div>
+
+    <div id="history" class="section">
+      <div>
+        <h2>🧻 Histórico de Cagadas</h2>
+        <div id="sessionList">
+          <!-- Sessions will be added here -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let startTime;
+    let timerInterval;
+    let ratePerMinute = 0;
+    let sessions = [];
+
+    document.querySelectorAll('.menu-btn').forEach(button => {
+      button.addEventListener('click', function() {
+        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+        document.getElementById(this.dataset.section).classList.add('active');
+      });
+    });
+
+    document.getElementById('calculate').addEventListener('click', function() {
+      const salary = parseFloat(document.getElementById('salary').value);
+      const hours = parseFloat(document.getElementById('hours').value);
+      const days = parseFloat(document.getElementById('days').value);
+
+      if (isNaN(salary) || isNaN(hours) || isNaN(days)) {
+        alert('Por favor, preencha todos os campos corretamente.');
+        return;
+      }
+
+      ratePerMinute = salary / (hours * days * 60);
+      document.getElementById('rate').innerText = `Você ganha R$ ${ratePerMinute.toFixed(2).replace('.', ',')} por minuto.`;
+    });
+
+    document.getElementById('toggle').addEventListener('click', function() {
+      const button = document.getElementById('toggle');
+      if (button.innerText === 'Iniciar') {
+        if (ratePerMinute === 0) {
+          alert('Por favor, calcule o valor por minuto primeiro.');
+          return;
+        }
+
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 100);
+        button.innerText = 'Parar';
+        document.getElementById('earnings').innerText = '';
+      } else {
+        clearInterval(timerInterval);
+        const endTime = new Date();
+        const duration = (endTime - startTime) / 1000; // Duration in seconds
+        const earnings = (duration / 60) * ratePerMinute;
+
+        const date = new Date(startTime);
+        const month = date.toLocaleString('pt-BR', { month: 'long' });
+        const year = date.getFullYear();
+
+        sessions.push({
+          date: startTime.toLocaleDateString('pt-BR'),
+          time: startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+          duration: duration.toFixed(2),
+          earnings: earnings.toFixed(2).replace('.', ',')
+        });
+
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        let timeString = seconds + 's';
+        if (minutes > 0) {
+          timeString = minutes + 'm ' + seconds + 's';
+        }
+        document.getElementById('earnings').innerText = `Você ganhou R$ ${earnings.toFixed(2).replace('.', ',')} em ${timeString}.`;
+        button.innerText = 'Iniciar';
+        updateHistory();
+      }
+    });
+
+    function updateTimer() {
+      const now = new Date();
+      const elapsed = new Date(now - startTime);
+      const minutes = elapsed.getMinutes().toString().padStart(2, '0');
+      const seconds = elapsed.getSeconds().toString().padStart(2, '0');
+      const tenths = Math.floor(elapsed.getMilliseconds() / 100).toString();
+      document.getElementById('timer-display').innerText = `${minutes}:${seconds}.${tenths}`;
+
+      const duration = (now - startTime) / 1000; // Duration in seconds
+      const earnings = (duration / 60) * ratePerMinute;
+      document.getElementById('current-earnings').innerText = `R$ ${earnings.toFixed(2).replace('.', ',')}`;
+    }
+
+    function updateHistory() {
+      const sessionList = document.getElementById('sessionList');
+      sessionList.innerHTML = '';
+
+      sessions.forEach((session, index) => {
+        const entrada = document.createElement('div');
+        entrada.className = 'entrada';
+        const minutes = Math.floor(session.duration / 60);
+        const seconds = Math.floor(session.duration % 60);
+        let timeString = seconds + 's';
+        if (minutes > 0) {
+          timeString = minutes + 'm ' + seconds + 's';
+        }
+        entrada.innerHTML = `
+          <div class="entrada-info">
+            <div>🗓️ ${session.date} – ${session.time}</div>
+            <div>⏱️ ${timeString}</div>
+            <div>💵 R$ ${session.earnings}</div>
+          </div>
+          <button class="btn-apagar" data-index="${index}"><i class="bi bi-trash"></i></button>
+        `;
+        sessionList.appendChild(entrada);
+      });
+
+      document.querySelectorAll('.btn-apagar').forEach(button => {
+        button.addEventListener('click', function() {
+          const index = this.dataset.index;
+          sessions.splice(index, 1);
+          updateHistory();
+        });
+      });
+    }
+  </script>
+</body>
+</html>
